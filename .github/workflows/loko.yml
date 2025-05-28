@@ -8,9 +8,9 @@ on:
       - main
   workflow_dispatch:
 jobs:
-  train-model:
+  run-model:
     runs-on: ubuntu-latest
-    timeout-minutes: 355
+    timeout-minutes: 5
     continue-on-error: true
     steps:
       - name: Checkout code
@@ -51,10 +51,12 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             console.log('Context:', JSON.stringify(context, null, 2));
-            let workflowId = 'main.yml'; // Fallback
-            if (context.workflow_ref) {
-              workflowId = context.workflow_ref.split('/').pop().split('@')[0];
-            }
+            const { data: workflows } = await github.rest.actions.listRepoWorkflows({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            const currentWorkflow = workflows.workflows.find(w => w.name === context.workflow);
+            const workflowId = currentWorkflow ? currentWorkflow.path.split('/').pop() : 'test.yml'; // Replace with your file name
             console.log(`Using workflow_id: ${workflowId}`);
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
