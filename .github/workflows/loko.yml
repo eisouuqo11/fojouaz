@@ -50,10 +50,13 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const workflowRef = context.workflow_ref;
+            const workflowId = workflowRef.split('/').pop().split('@')[0];
+            console.log(`Detected workflow_id: ${workflowId}`);
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'main.yml',
+              workflow_id: workflowId,
               ref: 'main'
             });
         continue-on-error: true
