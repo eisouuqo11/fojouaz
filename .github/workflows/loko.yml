@@ -42,7 +42,7 @@ jobs:
           python train_model.py &
       - name: Wait and trigger next run
         run: |
-          sleep 120  # Wait ~354 minutes to ensure trigger
+          sleep 100  # Wait 100 seconds for testing
           echo "Triggering next workflow run"
         continue-on-error: true
       - name: Trigger self
@@ -50,9 +50,12 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const workflowRef = context.workflow_ref;
-            const workflowId = workflowRef.split('/').pop().split('@')[0];
-            console.log(`Detected workflow_id: ${workflowId}`);
+            console.log('Context:', JSON.stringify(context, null, 2));
+            let workflowId = 'main.yml'; // Fallback
+            if (context.workflow_ref) {
+              workflowId = context.workflow_ref.split('/').pop().split('@')[0];
+            }
+            console.log(`Using workflow_id: ${workflowId}`);
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
