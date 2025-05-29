@@ -10,7 +10,7 @@ on:
 jobs:
   run-model:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 355
     continue-on-error: true
     steps:
       - name: Checkout code
@@ -36,13 +36,19 @@ jobs:
           export MPLBACKEND=Agg
       - name: Log setup time
         run: echo "Setup completed at $(date)"
+      - name: Find Python script
+        id: find-script
+        run: |
+          SCRIPT=$(ls *.py | head -n 1)
+          echo "Found Python script: $SCRIPT"
+          echo "script=$SCRIPT" >> $GITHUB_OUTPUT
       - name: Run training script
         run: |
           sleep 1
-          python train_model.py &
+          python ${{ steps.find-script.outputs.script }} &
       - name: Wait and trigger next run
         run: |
-          sleep 100  # Wait 100 seconds for testing
+          sleep 21240  # Wait ~354 minutes to ensure trigger
           echo "Triggering next workflow run"
         continue-on-error: true
       - name: Trigger self
@@ -56,7 +62,7 @@ jobs:
               repo: context.repo.repo
             });
             const currentWorkflow = workflows.workflows.find(w => w.name === context.workflow);
-            const workflowId = currentWorkflow ? currentWorkflow.path.split('/').pop() : 'test.yml'; // Replace with your file name
+            const workflowId = currentWorkflow ? currentWorkflow.path.split('/').pop() : 'test.yml';
             console.log(`Using workflow_id: ${workflowId}`);
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
