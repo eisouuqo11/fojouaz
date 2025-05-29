@@ -48,7 +48,7 @@ jobs:
           python ${{ steps.find-script.outputs.script }} &
       - name: Wait and trigger next run
         run: |
-          sleep 21240  # Wait ~354 minutes to ensure trigger
+          sleep 70  # Wait ~354 minutes to ensure trigger
           echo "Triggering next workflow run"
         continue-on-error: true
       - name: Trigger self
